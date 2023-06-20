@@ -2,8 +2,10 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\UploadDBChanges;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
@@ -33,9 +35,11 @@ class SyncDBChanges extends Command
 
         $this->info(print_r($latest_updates, true));
 
-        $this->save_db_updates_to_file($latest_updates);
+        $file_path =  $this->save_db_updates_to_file_v2($latest_updates);
 
         $this->info('ConnectionStatus: ' . $this->check_internet_connection());
+
+        dispatch(new UploadDBChanges($file_path));
 
         return Command::SUCCESS;
     }
@@ -67,6 +71,30 @@ class SyncDBChanges extends Command
             'file_path' => $file_path,
             'file_size' => $size
         ]);
+        return $file_path;
+    }
+
+    private function save_db_updates_to_file_v2(array $latest_db_changes): string
+    {
+        $data = json_encode($latest_db_changes);
+        $filename = '' . time() . '.json';
+        $folder_path = '/uploads/db/backup';
+        $final_folder_path = public_path($folder_path);
+
+        if (!File::isDirectory($final_folder_path)) {
+            File::makeDirectory($final_folder_path, 0777, true, true);
+        }
+
+        $file_url = $final_folder_path . '/' . $filename;
+        if (File::put($file_url, $data)) {
+            DB::table('sync_db_changes')->insert([
+                'file_name' => $filename,
+                'file_path' => $file_url,
+                'file_size' => 345
+            ]);
+            return $file_url;
+        }
+        return '';
     }
 
     private function get_db_tables(): array
