@@ -36,36 +36,20 @@ class UploadDBChanges implements ShouldQueue
     {
         $url = 'http://127.0.0.1:8000/api/uploads/online';
 
-        // $file = Storage::disk('local')->get($this->filepath);
+        // $fileData = Storage::disk('local')->get($this->filepath);
 
-        // $storagePath  = Storage::disk('local')->getAdapter()->getPathPrefix();
-
-        // $fileAddress = storage_path().'/file.jpg';
-        // $file = new UploadedFile($fileAddress, 'file');
-
-        $tmpFile = new File($this->filepath);
-
-        $file = new UploadedFile(
-            $tmpFile->getPathname(),
-            $tmpFile->getFilename(),
-            $tmpFile->getMimeType(),
-            0,
-            true // Mark it as test, since the file isn't from real HTTP POST.
-        );
-
-        // $file = new UploadedFile($this->filepath, 'file.json', 'application/json', null, true);
-
-        // Log::alert(print_r(base64_encode($file), true));
+        $fileAddress = storage_path('app/'.$this->filepath);
+        
+        $file = new UploadedFile($fileAddress, 'file', test: true);
 
         $request = Request::create('/api/uploads/online', 'POST', cookies: [], files: ['file' => $file]);
 
         $response = app()->handle($request);
 
-        // Log::alert(print_r($response, true));
-
         $responseBody = json_decode($response->getContent(), true);
 
         Log::alert(print_r('responseBody: ' . $responseBody, true));
+
         // $response = Http::attach(
         //     'upload',
         //     $file,
