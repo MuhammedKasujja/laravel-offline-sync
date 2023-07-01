@@ -25,7 +25,7 @@ class HomeController extends Controller
         try {
             Log::alert('RequestData: ' . print_r($request->all(), true));
             if ($request->hasFile('file')) {
-                $this->upload_file($request->file('file'));
+                $this->save_file($request->file('file'));
                 return response()->json("File found", 200);
             }
             throw new \Exception('File not found');
@@ -34,7 +34,7 @@ class HomeController extends Controller
         }
     }
 
-    private function upload_file(\Illuminate\Http\UploadedFile $file)
+    private function save_file(\Illuminate\Http\UploadedFile $file)
     {
        $path = Storage::putFileAs('public/db/downloads',  $file, $file->getBasename());
        Log::warning('FilePath: ==> '.url($path));
