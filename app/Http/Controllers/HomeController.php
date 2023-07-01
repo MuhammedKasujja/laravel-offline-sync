@@ -49,4 +49,22 @@ class HomeController extends Controller
             ['departure' => 'Chicago', 'destination' => 'New York', 'price' => 150]
         ], ['departure', 'destination'], ['price']);
     }
+
+    function get_file_content(\Illuminate\Http\UploadedFile $file)
+    {
+        // $content = file_get_contents($file);
+        // $json = json_decode($content, true);
+        $file->open('r');
+        $contents = $file->fread($file->getSize());
+        return json_decode($contents, true);
+    }
+
+    function save_to_db(): bool
+    {
+        return  DB::table('users')
+            ->updateOrInsert(
+                ['email' => 'john@example.com', 'name' => 'John'],
+                ['votes' => '2']
+            );
+    }
 }
