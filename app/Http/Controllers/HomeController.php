@@ -41,7 +41,7 @@ class HomeController extends Controller
         Log::warning('FilePath: ==> ' . url($path));
     }
 
-    function save_file_contents_in_db($json_file_contents)
+    private function save_file_contents_in_db($json_file_contents)
     {
         // using DB:upsert to replace row if exists [should use PK as second argument]
         return DB::table('flights')->upsert([
@@ -50,7 +50,7 @@ class HomeController extends Controller
         ], ['departure', 'destination'], ['price']);
     }
 
-    function get_file_content(\Illuminate\Http\UploadedFile $file)
+    private function get_file_content(\Illuminate\Http\UploadedFile $file)
     {
         // $content = file_get_contents($file);
         // $json = json_decode($content, true);
@@ -59,12 +59,14 @@ class HomeController extends Controller
         return json_decode($contents, true);
     }
 
-    function save_to_db(): bool
+    private function save_to_db(string $tableName, array $data): bool
     {
-        return  DB::table('users')
-            ->updateOrInsert(
-                ['email' => 'john@example.com', 'name' => 'John'],
-                ['votes' => '2']
+        $pk = $data['id'];
+        $values = array_diff($data, ['id']);
+
+        return  DB::table($tableName)->updateOrInsert(
+                $values,
+                ['id' => $pk]
             );
     }
 }
