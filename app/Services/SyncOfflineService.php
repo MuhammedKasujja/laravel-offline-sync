@@ -1,43 +1,29 @@
 <?php
 
-namespace App\Console\Commands;
+namespace App\Services;
 
 use App\Jobs\UploadDBChanges;
-use App\Services\SyncOfflineService;
-use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
-class SyncDBChanges extends Command
+class SyncOfflineService
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'app:sync-d-b-changes';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Command description';
-
-    /**
-     * Execute the console command.
-     */
-    public function handle()
+    public function checkDBChanges()
     {
 
-        $this->call('migrate');
+        $latest_updates = $this->get_latest_db_updates();
 
-        (new SyncOfflineService)->checkDBChanges();
+        Log::info(print_r($latest_updates, true));
 
-        return Command::SUCCESS;
+        $file_path =  $this->save_db_updates_to_file($latest_updates);
+
+        Log::info('ConnectionStatus: ' . $this->check_internet_connection());
+
+        dispatch(new UploadDBChanges($file_path));
     }
-
     private function check_internet_connection(): string
     {
         $host_name = 'www.google.com';
@@ -93,4 +79,5 @@ class SyncDBChanges extends Command
         }
         return $latest_updates;
     }
+
 }
