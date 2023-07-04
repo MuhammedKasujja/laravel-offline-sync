@@ -27,12 +27,17 @@ class SyncOnlineService
 
     private function save_file_contents_in_db_v2(array $json_file_contents)
     {
-        Schema::disableForeignKeyConstraints();
-        // Log::emergency(print_r($json_file_contents, true));
-        foreach ($json_file_contents as $key => $value) {
-            $this->save_to_db(tableName: $key, updatedRows: $value);
+        try {
+            Schema::disableForeignKeyConstraints();
+            // Log::emergency(print_r($json_file_contents, true));
+            foreach ($json_file_contents as $key => $value) {
+                $this->save_to_db(tableName: $key, updatedRows: $value);
+            }
+        } catch (\Throwable $th) {
+            throw $th;
+        } finally {
+            Schema::enableForeignKeyConstraints();
         }
-        Schema::enableForeignKeyConstraints();
     }
 
     private function get_file_content(\Illuminate\Http\UploadedFile $file)
