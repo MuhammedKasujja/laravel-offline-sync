@@ -33043,6 +33043,7 @@
     { "module_views": [] },
     { "modules": [] },
     { "notifications": [] },
+    { "offline_sync_config": [] },
     {
         "onboarding_docs": [
             {
